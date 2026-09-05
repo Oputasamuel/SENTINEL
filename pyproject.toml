@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sentinel-security-cli"
-version = "0.2.0"
-description = "Solidity review with persistent repository memory and your own LLM provider"
+version = "0.3.0"
+description = "Shared SENTINEL workspaces and server-backed Solidity reviews"
 requires-python = ">=3.11"
 dependencies = ["sibyl-memory-client==0.8.0", "keyring>=25,<27"]
 

@@ -1,9 +1,9 @@
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { workspaceUser } from '@/lib/workspace-auth';
 import { getDb } from '@/db';
 import { boundedJson, json } from '@/lib/cloud-api';
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id:string; findingId:string }> }) {
-  const user = await getChatGPTUser();
+  const user = await workspaceUser(request);
   if (!user) return json({ error:'Sign in required.' }, 401);
   const { id, findingId } = await params;
   let body: Record<string, unknown>;

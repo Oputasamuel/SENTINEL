@@ -1,6 +1,41 @@
 # SENTINEL
 
-A CLI-first Solidity reviewer with repository-specific Sibyl memory and a signed-in review dashboard. Each user supplies their own provider key; requests go directly from their machine to Gemini, OpenAI, OpenRouter, Anthropic (Claude), AgentRouter, or NVIDIA NIM. SENTINEL does not fund model usage.
+Review Solidity contracts from the dashboard or terminal using the same signed-in workspaces. Hosted CLI audits use SENTINEL’s server worker and need no user LLM key. The older local review commands remain available separately.
+
+## Hosted CLI quick start
+
+Python 3.11+ and an OS credential store are required. Install from GitHub (the package is not published to PyPI):
+
+```sh
+pipx install git+https://github.com/Oputasamuel/SENTINEL.git
+sentinel login
+sentinel workspace create https://github.com/crytic/not-so-smart-contracts
+sentinel audit --wait
+sentinel findings
+```
+
+Login opens Privy in your browser. Approve only the code displayed in your terminal. The CLI stores its revocable account token in the OS credential store. Workspace creation lists contracts for numbered selection, saves a draft, and selects it locally; `audit` starts the server review. The dashboard displays the same workspace.
+
+```sh
+sentinel workspace list
+sentinel workspace use WORKSPACE_ID
+sentinel workspace create https://github.com/owner/repository --contracts contracts/Vault.sol
+sentinel audit --workspace WORKSPACE_ID
+sentinel findings show FINDING_ID
+sentinel findings add
+sentinel findings set-status FINDING_ID confirmed
+sentinel logout
+```
+
+`sentinel findings --workspace WORKSPACE_ID show FINDING_ID` targets another workspace without changing the default. Add findings interactively or pass `--title`, `--contract`, `--severity`, and `--description` after `findings add`. Full finding IDs are printed in the list.
+
+Server limits apply: up to 8 contracts, 3 new workspaces per account per day, and one queued/running audit at a time. `--wait` stops waiting after 600 seconds by default, while the server job continues. An available server worker is required; queuing is not proof that a review has completed.
+
+Scheduled GitHub rechecks and email delivery are not yet implemented. `sentinel watch status` reports this; `watch enable` does not pretend to schedule anything. Manual findings and decisions use the existing dashboard storage; their propagation into Sibyl and scheduled rechecks remains pending. Automated audits use the worker’s required Sibyl memory workflow.
+
+## Optional local-review workflow
+
+The following older workflow runs reviews on your own machine with your own provider key.
 
 ## Install from this source checkout
 

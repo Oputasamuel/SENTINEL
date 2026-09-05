@@ -8,6 +8,7 @@ from pathlib import Path
 from bugmind import __version__
 from bugmind.base import save_prepared, verify_receipt
 from bugmind.cloud import login, sync
+from bugmind.remote import add_commands, execute_remote, DEFAULT_DASHBOARD
 from bugmind.project import find_project, initialize, load_files
 from bugmind.providers import BYOKReviewer, PROVIDERS, list_models
 from bugmind.pashov import PashovReviewer
@@ -20,7 +21,7 @@ def main():
     parser.add_argument('--version', action='version', version=__version__)
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('init')
-    sign_in = commands.add_parser('login'); sign_in.add_argument('--dashboard', required=True)
+    sign_in = commands.add_parser('login'); sign_in.add_argument('--dashboard', default=DEFAULT_DASHBOARD)
     provider = commands.add_parser('provider'); provider.add_argument('action', choices=['add']); provider.add_argument('name', choices=PROVIDERS)
     select = commands.add_parser('select', help='Interactive setup')
     select.add_argument('target', choices=['provider'])
@@ -37,6 +38,7 @@ def main():
     receipt.add_argument('--file', help='Receipt JSON path (default: .bugmind/receipts/REVIEW_ID.json)')
     for command in ['confirm', 'reject', 'fixed']:
         feedback = commands.add_parser(command); feedback.add_argument('review_id'); feedback.add_argument('finding_id'); feedback.add_argument('--reason', required=True)
+    add_commands(commands)
     args = parser.parse_args()
     try:
         execute(args)
@@ -100,6 +102,8 @@ def configure_provider(config, name=None):
 
 def execute(args):
     config = read_config()
+    if args.command in {'workspace', 'audit', 'findings', 'watch', 'logout'}:
+        return execute_remote(args)
     if args.command == 'login':
         return login(args.dashboard)
     if args.command == 'select':

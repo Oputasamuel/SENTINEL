@@ -11,6 +11,8 @@ from worker.core import ReviewError
 
 def dashboard_url(value):
     parsed = urllib.parse.urlparse(value)
+    if not parsed.hostname:
+        raise ReviewError('Run sentinel login to connect to your dashboard.')
     if parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path not in {'', '/'}:
         raise ReviewError('Use the dashboard origin only, such as https://bugmind.example.')
     if parsed.scheme != 'https' and not (parsed.scheme == 'http' and parsed.hostname in {'localhost', '127.0.0.1'}):
@@ -18,7 +20,12 @@ def dashboard_url(value):
     return value.rstrip('/')
 
 
-def call(path, body, authenticated=True, base=None):
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ReviewError('SENTINEL redirected the API request. Check the dashboard URL; no token was forwarded.')
+
+
+def call(path, body=None, authenticated=True, base=None, method=None):
     config = read_config()
     base = dashboard_url(base or config.get('dashboard', ''))
     headers = {'Content-Type': 'application/json', 'User-Agent': 'SENTINEL/0.2'}
@@ -27,14 +34,21 @@ def call(path, body, authenticated=True, base=None):
         if not token:
             raise ReviewError('Run sentinel login to link this CLI to your dashboard.')
         headers['Authorization'] = 'Bearer ' + token
-    request = urllib.request.Request(base + path, data=json.dumps(body).encode(), headers=headers)
+    request = urllib.request.Request(base + path, data=json.dumps(body).encode() if body is not None else None, headers=headers, method=method or ('POST' if body is not None else 'GET'))
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
+        with urllib.request.build_opener(NoRedirect()).open(request, timeout=30) as response:
             return json.load(response)
     except urllib.error.HTTPError as error:
         if error.code == 401:
             raise ReviewError('Your dashboard session expired. Run sentinel login again.') from None
-        raise ReviewError(f'Dashboard returned HTTP {error.code}. Your local review is preserved.') from None
+        try:
+            message = json.loads(error.read(4096)).get('error', '')
+        except (ValueError, AttributeError):
+            message = ''
+        message = ''.join(c for c in str(message) if c.isprintable())[:300]
+        raise ReviewError(message or f'Dashboard returned HTTP {error.code}.') from None
+    except urllib.error.URLError:
+        raise ReviewError('Could not reach SENTINEL. Check your connection and try again.') from None
 
 
 def login(base):
@@ -52,7 +66,7 @@ def login(base):
             config = read_config()
             config['dashboard'] = base
             write_config(config)
-            print('CLI linked. Your API keys remain on this device.')
+            print('CLI linked. Server audits need no LLM key. Run sentinel workspace create REPOSITORY_URL.')
             return
         if response.get('status') == 'expired':
             break
