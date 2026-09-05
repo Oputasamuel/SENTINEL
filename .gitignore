@@ -1,0 +1,14 @@
+.venv/
+.env
+.env.*
+!.env.example
+.bugmind/
+__pycache__/
+*.pyc
+vendor/
+tmp/
+*.egg-info/
+build/
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.wrangler/

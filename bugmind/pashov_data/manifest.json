@@ -1,0 +1,26 @@
+{
+  "upstream": "https://github.com/pashov/skills",
+  "revision": "c577eb7799c349de0acb187ba00ca98e14e436fd",
+  "sha256": {
+    "LICENSE": "6d330c8b1118609f7298843cd0cfa6a649e4d69bbb31859be63da350f9e5d6e4",
+    "solidity-auditor/README.md": "4bb4917076ad6e9215009cce22a3e65cbbd4906acc5ce368516afe5b8b06df8f",
+    "solidity-auditor/references/hacking-agents/access-control-agent.md": "9ca707f74a74d7584177ac0c2e1742b8621d0606773623825448709f4ed4929d",
+    "solidity-auditor/references/hacking-agents/asymmetry-agent.md": "5bace75475f1b4ae315590e2410988ac863b964b6b40a9a80abe4553c90a4c4c",
+    "solidity-auditor/references/hacking-agents/boundary-agent.md": "9efacb128cf7ea61db71d20982d777a1918a471dddb9a313ab8cac1aa8763a6d",
+    "solidity-auditor/references/hacking-agents/economic-security-agent.md": "3b70e9fb31ac80a3b288b9bd8d59e28b4ac2990d09c2020d01c0826fd39d0901",
+    "solidity-auditor/references/hacking-agents/execution-trace-agent.md": "1cae38462ee23f840a8fb822c2a9fdedd8be39b6f231c24b84c7fb87842edb8f",
+    "solidity-auditor/references/hacking-agents/first-principles-agent.md": "2326c94d57de0c0527442979011a0855838d86163af9cf10e9f25676c1a4a096",
+    "solidity-auditor/references/hacking-agents/flow-gap-agent.md": "e2d84b105f4c5bf411f84870215a0528e009d4d1026e3d068326daf67f22ed19",
+    "solidity-auditor/references/hacking-agents/invariant-agent.md": "cbedd978c2eff26cea33b4f663ee05e76b3d4d5046eb5f995e034d960fe2feca",
+    "solidity-auditor/references/hacking-agents/math-precision-agent.md": "6a0642f92221ef06222413fce9933953a07d8dfcd97578e330be99814723d026",
+    "solidity-auditor/references/hacking-agents/numerical-gap-agent.md": "d12c14ac34cfd8c5f627b6178d53c38edf11bc40a167bfbaae51decc7e0e6c8c",
+    "solidity-auditor/references/hacking-agents/periphery-agent.md": "214de035d43b894231275e831cbdbbe77db1de5cb65d8185b0cd98a5628ec660",
+    "solidity-auditor/references/hacking-agents/shared-rules.md": "31ea03517e77dd171275f5d6915e6011bfc20673d5a8bf713ed198508440f3f1",
+    "solidity-auditor/references/hacking-agents/trust-gap-agent.md": "ad0afa7789a11eeb6f9fa0b8294611587f3302f956c3ff1f8ba835ea19193a9a",
+    "solidity-auditor/references/judging.md": "0df1170ba846e9df6e8a08a685d468fe5e3efe7df5e521c080d9fb98ddd9e888",
+    "solidity-auditor/references/report-formatting.md": "e7870a348b34cd1b77a564bac909a39c63322cd31ac083a0c3669e96e7266afc",
+    "solidity-auditor/references/senior-auditor-sop.md": "8f2f32d0fb25e1d0511f39de7d5a99550de4e8d404a95d468243e59ce465271d",
+    "solidity-auditor/SKILL.md": "744ee0ad7224964b1a19295e607a21db21b80100cf8fbe312af12869969e7d05",
+    "solidity-auditor/VERSION": "24ba1e99dc06b19351323aae0d7370243d586475a634b7f6ff7927fbc72cfaed"
+  }
+}
