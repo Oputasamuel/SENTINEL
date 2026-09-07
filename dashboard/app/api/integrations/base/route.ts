@@ -1,0 +1,8 @@
+import { workspaceUser } from '@/lib/workspace-auth';
+import { getDb } from '@/db';
+import { boundedJson,json } from '@/lib/cloud-api';
+export async function POST(request:Request){const user=await workspaceUser(request);if(!user)return json({error:'Sign in required'},401);let body:any;try{body=await boundedJson(request,2000)}catch{return json({error:'Invalid deployment'},400)}
+ if(!/^0x[a-fA-F0-9]{40}$/.test(body.address||'')||!/^0x[a-fA-F0-9]{64}$/.test(body.transactionHash||''))return json({error:'Invalid Base deployment'},400);
+ const db=getDb();await db.prepare(`CREATE TABLE IF NOT EXISTS integration_settings (user_id TEXT NOT NULL,kind TEXT NOT NULL,payload TEXT NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(user_id,kind))`).run();
+ await db.prepare(`INSERT INTO integration_settings VALUES (?,?,?,?) ON CONFLICT(user_id,kind) DO UPDATE SET payload=excluded.payload,updated_at=excluded.updated_at`).bind(user.userId,'base',JSON.stringify({chainId:84532,address:body.address,transactionHash:body.transactionHash}),new Date().toISOString()).run();return json({saved:true});}
+export async function GET(request:Request){const user=await workspaceUser(request);if(!user)return json({error:'Sign in required'},401);const db=getDb();await db.prepare(`CREATE TABLE IF NOT EXISTS integration_settings (user_id TEXT NOT NULL,kind TEXT NOT NULL,payload TEXT NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(user_id,kind))`).run();const row=await db.prepare("SELECT payload FROM integration_settings WHERE user_id=? AND kind='base'").bind(user.userId).first<{payload:string}>();return json(row?JSON.parse(row.payload):null)}

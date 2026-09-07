@@ -17,6 +17,7 @@ function route(claim) {
       }};
       if (name === '@/app/sentinel-auth') return { sentinelSessionCookie: 'sentinel-session', createSessionValue: async user => { stored = user; return 'test-session'; } };
       if (name === '@/lib/cloud-api') return { json: (body, status = 200) => Response.json(body, { status }) };
+      if (name === '@/db') return { getDb: () => ({ prepare: () => ({ run: async () => ({}), bind() { return this; } }) }) };
       throw new Error(name);
     },
   });

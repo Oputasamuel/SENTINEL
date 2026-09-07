@@ -27,6 +27,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const id = crypto.randomUUID();
   await db.prepare('INSERT INTO workspace_findings VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
     .bind(id, workspaceId, user.userId, new Date().toISOString(), 'manual', title, contract, severity, description, 'open').run();
+  await db.prepare(`CREATE TABLE IF NOT EXISTS memory_sync_queue (
+    id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, user_id TEXT NOT NULL, finding_id TEXT NOT NULL,
+    operation TEXT NOT NULL, payload TEXT NOT NULL, created_at TEXT NOT NULL, processed_at TEXT
+  )`).run();
+  await db.prepare('INSERT INTO memory_sync_queue (id,workspace_id,user_id,finding_id,operation,payload,created_at) VALUES (?,?,?,?,?,?,?)')
+    .bind(crypto.randomUUID(),workspaceId,user.userId,id,'upsert',JSON.stringify({id,title,file:contract,severity,description,status:'open',source:'manual'}),new Date().toISOString()).run();
   return json({ saved: true, id }, 201);
 }
 

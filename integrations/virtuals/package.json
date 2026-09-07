@@ -1,0 +1,1 @@
+{"name":"sentinel-virtuals-provider","private":true,"type":"module","scripts":{"start":"tsx provider.ts","check":"tsc --noEmit --skipLibCheck --module esnext --moduleResolution bundler --target es2022 provider.ts"},"dependencies":{"@account-kit/infra":"^4.84.1","@virtuals-protocol/acp-node-v2":"0.1.12","tsx":"^4.20.6","typescript":"^5.9.3"}}

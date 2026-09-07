@@ -122,11 +122,11 @@ flowchart TD
 | **GitHub** | Supplies the selected Solidity source. | Worker resolves the branch to a commit and fetches its selected files. Public repositories only. |
 | **Pashov skills** | Provide the security review instructions. | Bundled `solidity-auditor`: 12 specialist passes, judging, then structured extraction. This is an API adaptation, not a review by the Pashov team. |
 | **NVIDIA NIM** | Runs the model used by the hosted audit worker. | Operator-funded credentials; model is configurable with `NVIDIA_MODEL`. Hosted users do not supply keys. |
-| **Sibyl** | Remembers findings and feedback across review processes. | Required `sibyl-memory-client==0.8.0`, using a local persistent database. Recall happens before inference. |
-| **Cloudflare D1** | Stores accounts' CLI sessions, workspaces, findings and activity. | Application storage, separate from Sibyl's review memory. |
-| **Base** | Intended verifiable audit receipts without publishing private evidence. | Receipt preparation/local verification and a Solidity registry contract exist. Automated onchain submission is not wired into the hosted audit path. |
-| **Virtuals ACP** | Intended network for agents to request and deliver audit/recheck jobs. | The SYBIL agent has been configured in the Virtuals UI, but this repository does not execute ACP jobs or settlement. Registration alone is not a working job integration. |
-| **Email and daily rechecks** | Intended updates when a review finishes, a possible fix needs approval, or a bug returns. | Planned. Scheduling and email delivery are not implemented; `watch enable` reports that explicitly. |
+| **Sibyl** | Remembers findings and feedback across review processes. | Required `sibyl-memory-client==0.8.0`. D1 durably mirrors its entities so a fresh worker hydrates Sibyl before inference. Dashboard findings and decisions enter the same memory. |
+| **Cloudflare D1** | Stores accounts' sessions, workspaces, findings, activity, notification attempts, watch state and durable memory mirrors. | Every row remains scoped to its account or service job. |
+| **Base** | Creates verifiable audit receipts without publishing private evidence. | The dashboard deploys a receipt registry through the hunter's Privy wallet and records hashed workspace states on Base Sepolia. Each transaction requires wallet approval. |
+| **Virtuals ACP** | Lets other agents request a SENTINEL audit. | The official ACP v2 provider accepts requirements, quotes 0.01 USDC, queues the normal Pashov/Sibyl worker path after funding, and submits the findings. Both SYBIL roles are operated by SENTINEL. |
+| **Email and daily rechecks** | Alerts users when a review finishes or changed source needs attention. | The worker checks watched repositories every 24 hours, skips inference for unchanged commits, and sends through Resend when configured. Possible fixes remain a human decision. |
 
 Pashov's upstream files are pinned to revision `c577eb7799c349de0acb187ba00ca98e14e436fd`, with the license and SHA-256 manifest in [bugmind/pashov_data](bugmind/pashov_data). A full successful run uses 14 model calls **per contract** in the hosted worker. This adapter does not autonomously execute exploit tests or search the entire repository.
 
@@ -243,7 +243,8 @@ Open `http://localhost:5173`. `.openai/hosting.json` identifies this project's e
 | `bugmind/pashov.py`, `bugmind/pashov_data/` | Review orchestration and pinned upstream skills. |
 | `bugmind/providers.py`, `bugmind/settings.py` | Model adapters, settings and OS key-store access. |
 | `worker/core.py` | Sibyl persistence/recall, context checks and finding validation. |
-| `worker/dashboard_worker.py` | GitHub intake and hosted audit-job processing. |
+| `worker/dashboard_worker.py` | Audit jobs, durable Sibyl hydration/sync, and daily GitHub rechecks. |
+| `integrations/virtuals/` | Virtuals ACP v2 provider connected to the hosted audit queue. |
 | `worker/server.py` | Legacy loopback worker for earlier fixtures and tests. |
 | `bugmind/base.py`, `contracts/` | Local Base receipt utilities and registry contract source. |
 | `tests/`, `dashboard/tests/` | Memory, CLI, provider and authentication checks. |
@@ -254,9 +255,9 @@ Open `http://localhost:5173`. `.openai/hosting.json` identifies this project's e
 
 - Private workspaces are scoped to the signed-in account. CLI credentials use the OS key store. A suitable key-store backend is required on Linux/headless machines.
 - Hosted source passes through the operator's worker and NVIDIA. Local reviews send source to the chosen provider; optional legacy `sync` uploads only review summaries.
-- Manual dashboard findings are saved in D1 but are not yet written back to Sibyl. Status decisions do not automatically verify that a vulnerability is fixed.
+- Status decisions are written into Sibyl. A changed review may mark a missing finding as `possible_fix`; the hunter must approve it as fixed.
 - The worker reviews selected contracts individually and can finish a workspace when at least one selected contract succeeds. A completed workspace is not proof that every contract was successfully reviewed.
-- Daily rechecks, email delivery, automatic Base transactions and executable Virtuals ACP jobs remain integration work. If both Virtuals agents are operated by SENTINEL, that relationship must be disclosed.
+- Daily rechecks require the Python worker to remain online. Email requires `RESEND_API_KEY` and a verified `SENTINEL_EMAIL_FROM`. The Virtuals provider requires its wallet ID and signer credential. Base transactions deliberately require the connected wallet's approval.
 - Findings require human verification. An empty result is not a security certificate, and SENTINEL is not a formal audit by Pashov.
 
 ## Tests

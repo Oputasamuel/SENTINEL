@@ -10,5 +10,8 @@ tmp/
 *.egg-info/
 build/
 dashboard/node_modules/
+integrations/*/node_modules/
 dashboard/dist/
 dashboard/.wrangler/
+.forge-cache/
+dashboard/lib/contracts/out/

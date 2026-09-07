@@ -15,6 +15,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!workspace) return json({ error:'Workspace not found.' }, 404);
   const result = await db.prepare('UPDATE workspace_findings SET status = ? WHERE id = ? AND workspace_id = ? AND user_id = ?').bind(status,findingId,id,user.userId).run();
   if (!result.meta.changes) return json({ error:'Finding not found.' }, 404);
+  const finding = await db.prepare('SELECT id,title,contract,severity,description,source FROM workspace_findings WHERE id = ? AND workspace_id = ? AND user_id = ?').bind(findingId,id,user.userId).first<any>();
+  await db.prepare(`CREATE TABLE IF NOT EXISTS memory_sync_queue (
+    id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, user_id TEXT NOT NULL, finding_id TEXT NOT NULL,
+    operation TEXT NOT NULL, payload TEXT NOT NULL, created_at TEXT NOT NULL, processed_at TEXT
+  )`).run();
+  await db.prepare('INSERT INTO memory_sync_queue (id,workspace_id,user_id,finding_id,operation,payload,created_at) VALUES (?,?,?,?,?,?,?)')
+    .bind(crypto.randomUUID(),id,user.userId,findingId,'decision',JSON.stringify({...finding,file:finding.contract,status}),new Date().toISOString()).run();
   await db.prepare(`CREATE TABLE IF NOT EXISTS workspace_events (id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, user_id TEXT NOT NULL, created_at TEXT NOT NULL, kind TEXT NOT NULL, message TEXT NOT NULL)`).run();
   await db.prepare('INSERT INTO workspace_events VALUES (?, ?, ?, ?, ?, ?)').bind(crypto.randomUUID(),id,user.userId,new Date().toISOString(),'decision',`Finding marked ${status}`).run();
   return json({ saved:true });

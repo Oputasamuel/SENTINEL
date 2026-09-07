@@ -2,6 +2,7 @@ import { ArrowRight, BrainCircuit, Clock3, FolderGit2, GitBranch, Plus } from 'l
 import { requireChatGPTUser } from '@/app/chatgpt-auth';
 import { PrivyAccount } from '@/app/privy-controls';
 import { getDb } from '@/db';
+import BaseSetup from './base-setup';
 export const dynamic = 'force-dynamic';
 type Summary = { id: string; repository: string; created_at: string; files: string[]; findings: { id: string }[] };
 type Workspace = { id: string; repository: string; branch: string; contracts: string; status: string; created_at: string };
@@ -28,6 +29,7 @@ export default async function Dashboard() {
       : <div className="first-workspace"><h2>Start your first review</h2><p>Paste a public GitHub repository, choose its Solidity contracts, and start your first Pashov review.</p><a className="primary-link" href="/dashboard/new">Create your first workspace<ArrowRight size={15}/></a><small>1. Add repository · 2. Select contracts · 3. Review</small></div>}</section>
       <section id="activity" className="activity-section"><div className="workspace-title"><div><h2>Recent activity</h2><p>Reviews, decisions, code changes, and proofs appear here.</p></div></div>
       {reviews.length ? <div className="activity-list">{reviews.slice(0,5).map(review=><article key={review.id}><span className="activity-icon"><BrainCircuit/></span><div><b>Pashov review completed</b><p>{review.files.length} contracts checked · {review.findings.length} findings · {review.repository}</p></div><time>{new Date(review.created_at).toLocaleDateString('en-GB')}</time></article>)}</div> : <div className="activity-empty">Your workspace activity will appear after the first review.</div>}</section>
+      <BaseSetup/>
     </main>
   </div>;
 }

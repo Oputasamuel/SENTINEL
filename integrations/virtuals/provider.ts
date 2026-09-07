@@ -1,0 +1,29 @@
+import { AcpAgent, PrivyAlchemyEvmProviderAdapter, AssetToken } from '@virtuals-protocol/acp-node-v2';
+import { base } from '@account-kit/infra';
+
+const required=['VIRTUALS_WALLET_ADDRESS','VIRTUALS_WALLET_ID','VIRTUALS_SIGNER_PRIVATE_KEY','SENTINEL_DASHBOARD','SENTINEL_WORKER_TOKEN'];
+for(const name of required) if(!process.env[name]) throw new Error(`Missing ${name}`);
+const dashboard=process.env.SENTINEL_DASHBOARD!.replace(/\/$/,'');
+const headers={authorization:`Bearer ${process.env.SENTINEL_WORKER_TOKEN}`,'content-type':'application/json'};
+async function workspaceId(jobId:string){const b=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(jobId)));return 'acp-'+Array.from(b.slice(0,16),x=>x.toString(16).padStart(2,'0')).join('')}
+const agent=await AcpAgent.create({evmProvider:await PrivyAlchemyEvmProviderAdapter.create({walletAddress:process.env.VIRTUALS_WALLET_ADDRESS! as `0x${string}`,walletId:process.env.VIRTUALS_WALLET_ID!,signerPrivateKey:process.env.VIRTUALS_SIGNER_PRIVATE_KEY!,chains:[base]})});
+
+agent.on('entry',async(session:any,entry:any)=>{
+  if(entry.kind==='message'&&entry.contentType==='requirement'&&session.status==='open'){
+    const requirement=JSON.parse(entry.content);
+    const response=await fetch(`${dashboard}/api/worker/acp`,{method:'POST',headers,body:JSON.stringify({jobId:String(session.jobId),repository:requirement.repository,branch:requirement.branch||'main',contracts:requirement.contracts})});
+    if(!response.ok){await session.sendMessage(`SENTINEL rejected the requirement: HTTP ${response.status}`);return}
+    await session.setBudget(AssetToken.usdc(0.01,session.chainId));
+  }
+  if(entry.kind==='system'&&entry.event.type==='job.funded'){
+    const id=await workspaceId(String(session.jobId));
+    for(let attempt=0;attempt<240;attempt++){
+      const result=await fetch(`${dashboard}/api/worker/acp?id=${encodeURIComponent(id)}`,{headers}).then(r=>r.json()) as any;
+      if(result.status==='watching'){await session.submit(JSON.stringify(result));return}
+      if(result.status==='failed'){await session.submit(JSON.stringify({error:'Audit failed safely',...result}));return}
+      await new Promise(resolve=>setTimeout(resolve,15000));
+    }
+    await session.submit(JSON.stringify({error:'Audit timed out before the one-hour SLA.'}));
+  }
+});
+await agent.start(()=>console.log('SYBIL Virtuals ACP provider listening.'));

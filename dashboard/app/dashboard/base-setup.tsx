@@ -1,0 +1,11 @@
+'use client';
+import { useEffect,useState } from 'react';
+import { useWallets } from '@privy-io/react-auth';
+import { createPublicClient,createWalletClient,custom,http } from 'viem';
+import { baseSepolia } from 'viem/chains';
+import { registryAbi,registryBytecode } from '@/lib/base-registry';
+
+export default function BaseSetup(){const {wallets}=useWallets();const [saved,setSaved]=useState<any>(undefined);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
+ useEffect(()=>{fetch('/api/integrations/base').then(r=>r.json()).then(setSaved).catch(()=>setSaved(null))},[]);
+ async function deploy(){setBusy(true);setError('');try{const wallet=wallets[0];if(!wallet)throw new Error('Connect a wallet first.');await wallet.switchChain(baseSepolia.id);const provider=await wallet.getEthereumProvider();const account=wallet.address as `0x${string}`;const client=createWalletClient({account,chain:baseSepolia,transport:custom(provider)});const hash=await client.deployContract({abi:registryAbi,bytecode:registryBytecode,account,chain:baseSepolia});const receipt:any=await createPublicClient({chain:baseSepolia,transport:http()}).waitForTransactionReceipt({hash});if(!receipt.contractAddress)throw new Error('Deployment completed without a contract address.');await fetch('/api/integrations/base',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({address:receipt.contractAddress,transactionHash:hash})}).then(async r=>{if(!r.ok){const value:any=await r.json();throw new Error(value.error)}});setSaved({address:receipt.contractAddress,transactionHash:hash})}catch(e){setError(e instanceof Error?e.message:'Deployment failed')}finally{setBusy(false)}}
+ return <section className="integration-card"><span>BASE SEPOLIA RECEIPTS</span><h2>{saved?.address?'Registry connected':'Deploy the receipt registry'}</h2><p>{saved?.address?`SENTINEL registry ${saved.address}`:'Your connected wallet deploys the privacy-preserving registry. Only audit hashes go onchain.'}</p>{saved?.address?<a href={`https://sepolia.basescan.org/address/${saved.address}`} target="_blank" rel="noreferrer">View on BaseScan</a>:<button className="primary-link" disabled={busy} onClick={deploy}>{busy?'Waiting for wallet…':'Deploy on Base Sepolia'}</button>}{error&&<small className="setup-error">{error}</small>}</section>}
