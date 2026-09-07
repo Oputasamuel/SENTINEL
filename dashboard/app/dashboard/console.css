@@ -71,3 +71,28 @@
 .sentinel-console .setup-card-head h2{font-size:21px}.sentinel-console .setup-card-head{background:#161d14}.sentinel-console .repo-input input{font-family:inherit;font-size:16px}.sentinel-console .repo-input>div{border-radius:5px}.sentinel-console .setup-progress span{font-family:inherit;font-size:14px}.sentinel-console .setup-progress span i{border-radius:50%}.sentinel-console .selection-bar{background:#161d14}.sentinel-console .contract-list label{border-radius:4px}
 .sentinel-console .workspace-health article{border-top:1px solid var(--line)}.sentinel-console .workspace-health b{font-size:20px}.sentinel-console .workspace-detail-head h1{font-size:clamp(26px,3vw,36px)}.sentinel-console .finding-cards h3{font-size:22px}.sentinel-console .finding-modal form{box-shadow:0 24px 80px #0009;border:1px solid #536947;border-radius:8px}.sentinel-console .finding-actions button{border-radius:4px;font-family:inherit;font-size:14px}
 @media(max-width:760px){.sentinel-console .app-main{padding-top:24px!important}.sentinel-console .app-top h1{font-size:30px}.sentinel-console .side-user{margin-top:8px}.sentinel-console .app-sidebar{gap:4px}.sentinel-console .app-top{gap:20px}.sentinel-console .first-workspace small{max-width:230px;line-height:1.8}}
+
+@media(max-width:760px){
+  .sentinel-console{width:100%;overflow-x:hidden;font-size:16px}
+  .sentinel-console .app-shell{width:100%;min-width:0}
+  .sentinel-console .app-sidebar{display:flex;flex-direction:column;padding:16px;gap:12px}
+  .sentinel-console .brand{width:100%;padding-bottom:12px}
+  .sentinel-console .side-section{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px}
+  .sentinel-console .side-link{justify-content:center;min-width:0;padding:10px 8px}
+  .sentinel-console .side-user{width:100%;min-width:0}.sentinel-console .side-user :is(b,small){max-width:min(240px,58vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sentinel-console .app-main{width:100%;min-width:0;padding:22px 16px 48px!important}
+  .sentinel-console .app-top{display:flex;flex-direction:column;align-items:stretch}.sentinel-console .app-top h1{font-size:28px}.sentinel-console .app-top .primary-link{width:100%;justify-content:center}
+  .sentinel-console .workspace-card{padding:19px 16px}.sentinel-console .workspace-card-top{display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px}.sentinel-console .workspace-card-top .live-pill{grid-column:1/-1;width:max-content;max-width:100%}
+  .sentinel-console .workspace-card-top h3{font-size:19px}.sentinel-console .workspace-foot{align-items:flex-start}.sentinel-console .workspace-foot>a{width:100%;justify-content:center;border:1px solid var(--line);padding:8px}
+  .sentinel-console :is(.setup-page,.workspace-page){width:100%;padding:22px 16px 48px!important}
+  .sentinel-console .setup-heading h1{font-size:29px;overflow-wrap:anywhere}
+  .sentinel-console .setup-progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}.sentinel-console .setup-progress>b{display:none}.sentinel-console .setup-progress span{display:flex;flex-direction:column;gap:6px;text-align:center;min-width:0;font-size:11px}.sentinel-console .setup-progress span i{margin:0 auto}
+  .sentinel-console .setup-card{min-width:0}.sentinel-console .setup-card-head{display:grid;grid-template-columns:32px minmax(0,1fr);padding:18px 16px}.sentinel-console .setup-card-head>.plain-button{grid-column:1/-1;width:100%;margin-top:10px}
+  .sentinel-console .repo-input{padding:18px 16px}.sentinel-console .repo-input>div{display:grid;grid-template-columns:32px minmax(0,1fr);gap:4px}.sentinel-console .repo-input>div>svg{margin:0 0 0 8px}.sentinel-console .repo-input input{width:100%;min-width:0}.sentinel-console .repo-input button{grid-column:1/-1;width:100%}
+  .sentinel-console .contract-list label{padding:14px 12px}.sentinel-console .contract-list label>span{max-width:calc(100vw - 112px)}.sentinel-console .contract-list label small{white-space:normal;word-break:break-word}
+  .sentinel-console .selection-bar{padding:16px}.sentinel-console .selection-bar>div{min-width:0}.sentinel-console .selection-bar .primary-link{width:100%;justify-content:center}
+  .sentinel-console .workspace-detail-head{display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px}.sentinel-console .workspace-detail-head .outline-link{grid-column:1/-1;justify-content:center}
+  .sentinel-console .workspace-health article{padding:20px 16px;min-width:0}.sentinel-console .workspace-health b,.sentinel-console .workspace-health small{overflow-wrap:anywhere}
+  .sentinel-console .finding-cards article{padding:20px 16px}.sentinel-console .finding-cards article>div{flex-wrap:wrap}.sentinel-console .finding-cards footer{display:flex;flex-direction:column;align-items:flex-start}.sentinel-console .finding-actions{display:grid;grid-template-columns:1fr}.sentinel-console .finding-actions button{width:100%}
+  .sentinel-console .finding-modal{padding:12px}.sentinel-console .finding-modal form{width:100%;max-height:calc(100dvh - 24px);padding:24px 16px}.sentinel-console .finding-modal h2{font-size:25px;padding-right:30px}
+}
