@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "https://bugmind-cli.zedef0808.chatgpt.site/"
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://bugmind-cli.zedef0808.chatgpt.site/:path*"
+    }
+  ]
+}
