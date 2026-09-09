@@ -1,9 +1,9 @@
 FROM node:22-alpine
 
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY integrations/virtuals/package.json integrations/virtuals/package-lock.json ./
 RUN npm ci
-COPY provider.ts ./
+COPY integrations/virtuals/provider.ts ./
 
 ENV NODE_ENV=production
 ENV VIRTUALS_NETWORK=production
