@@ -4,7 +4,7 @@
 
 SENTINEL helps bug hunters review selected Solidity contracts from a public GitHub repository. Use the dashboard or CLI to manage the same account-private workspaces, inspect findings, and add your own notes.
 
-[Open the dashboard](https://bugmind-cli.zedef0808.chatgpt.site) · [CLI source](bugmind/remote.py) · [Memory implementation](worker/core.py)
+[Open the dashboard](https://sentinel-security-one.vercel.app) · [CLI source](bugmind/remote.py) · [Memory implementation](worker/core.py)
 
 ## Memory walkthrough — three lines for judges
 
@@ -12,11 +12,11 @@ SENTINEL helps bug hunters review selected Solidity contracts from a public GitH
 **Recall:** A fresh process opens the same Sibyl database and repository tenant, retrieves `review_outcome` entities, checks their source hashes against the current files, and passes relevant memories into the reviewer before any model call.  
 **Change:** Remembered invariants guide the next review, changed hashes mark old assumptions for revalidation, and a disabled or unreadable Sibyl store stops the review before inference—there is no stateless fallback.
 
-This is implemented memory behavior, not a claim that every planned integration is complete. Automated worker findings are persisted to Sibyl. **Dashboard/hosted-CLI manual findings and decisions currently live in D1; their synchronization into Sibyl is still pending.** The complete human-feedback/recall loop is available through the local CLI commands below.
+This is implemented memory behavior. Automated findings, dashboard/hosted-CLI manual findings, and later status decisions are synchronized into the workspace's Sibyl memory by the audit worker. The local CLI commands below expose the same human-feedback/recall loop for local reviews.
 
 ## Try it in the browser
 
-1. Open [SENTINEL](https://bugmind-cli.zedef0808.chatgpt.site).
+1. Open [SENTINEL](https://sentinel-security-one.vercel.app).
 2. Sign in with **email or wallet** through Privy.
 3. Choose **New workspace** and paste a public GitHub repository URL.
 4. Select the `.sol` contracts to review, then choose **Create workspace & review**.
@@ -94,7 +94,7 @@ Useful commands:
 | `sentinel audit --workspace WORKSPACE_ID` | Start a draft audit or inspect its status. |
 | `sentinel findings --workspace WORKSPACE_ID show FINDING_ID` | Read a finding in a specific workspace. |
 | `sentinel logout` | Revoke this terminal's session. |
-| `sentinel watch status` | Report monitoring availability; scheduled checks are not enabled yet. |
+| `sentinel watch status` | Show whether the selected workspace is under daily monitoring. |
 
 Current hosted limits: **8 selected contracts, 3 new workspaces per account per day, and one queued/running audit per account at a time**. The worker also caps selected source at 120 KB. It reviews selected contracts individually; this is not a whole-repository audit.
 
@@ -216,7 +216,7 @@ Use a random worker token of at least 32 characters. Keep secrets out of Git. Th
 python -m worker.dashboard_worker
 ```
 
-Leave this service running to process queued audits. It currently polls for audit jobs; it does **not** run scheduled daily rechecks. A queued status alone does not prove that a worker is online. Audit artifacts may contain private source and review evidence.
+Leave this service running to process queued audits, synchronize manual findings into Sibyl, and claim due daily rechecks. An unchanged commit is recorded without another model review; a changed commit is reviewed against the stored memory and can trigger an email notification. A queued status alone does not prove that a worker is online. Audit artifacts may contain private source and review evidence.
 
 ### Dashboard development
 
