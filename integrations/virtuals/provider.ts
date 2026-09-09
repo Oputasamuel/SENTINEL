@@ -3,6 +3,7 @@ import { base } from '@account-kit/infra';
 
 const required=['VIRTUALS_WALLET_ADDRESS','VIRTUALS_WALLET_ID','VIRTUALS_SIGNER_PRIVATE_KEY','SENTINEL_DASHBOARD','SENTINEL_WORKER_TOKEN'];
 for(const name of required) if(!process.env[name]) throw new Error(`Missing ${name}`);
+if(!process.env.VIRTUALS_SIGNER_PRIVATE_KEY!.startsWith('MIGH')||process.env.VIRTUALS_SIGNER_PRIVATE_KEY!.length<140) throw new Error('VIRTUALS_SIGNER_PRIVATE_KEY must be the base64 PKCS#8 P-256 authorization key copied from the agent Signers tab, not an EOA hex private key.');
 const dashboard=process.env.SENTINEL_DASHBOARD!.replace(/\/$/,'');
 const headers={authorization:`Bearer ${process.env.SENTINEL_WORKER_TOKEN}`,'content-type':'application/json'};
 async function workspaceId(jobId:string){const b=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(jobId)));return 'acp-'+Array.from(b.slice(0,16),x=>x.toString(16).padStart(2,'0')).join('')}
