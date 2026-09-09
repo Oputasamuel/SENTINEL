@@ -1,25 +1,11 @@
 import { AcpAgent, AcpApiClient, PrivyAlchemyEvmProviderAdapter, AssetToken, SseTransport, ACP_TESTNET_SERVER_URL } from '@virtuals-protocol/acp-node-v2';
 import { base, baseSepolia } from '@account-kit/infra';
-import { existsSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
-
-const projectRoot=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
-for(const filename of ['.env','.env.integrations']){
-  const path=resolve(projectRoot,filename);
-  if(!existsSync(path)) continue;
-  for(const line of readFileSync(path,'utf8').split(/\r?\n/)){
-    const match=line.match(/^([^#=]+)=(.*)$/);
-    if(match&&!process.env[match[1].trim()]) process.env[match[1].trim()]=match[2].trim();
-  }
-}
-
 const required=['VIRTUALS_WALLET_ADDRESS','VIRTUALS_WALLET_ID','VIRTUALS_SIGNER_PRIVATE_KEY','SENTINEL_DASHBOARD','SENTINEL_WORKER_TOKEN'];
 for(const name of required) if(!process.env[name]) throw new Error(`Missing ${name}`);
 if(!process.env.VIRTUALS_SIGNER_PRIVATE_KEY!.startsWith('MIGH')||process.env.VIRTUALS_SIGNER_PRIVATE_KEY!.length<140) throw new Error('VIRTUALS_SIGNER_PRIVATE_KEY must be the base64 PKCS#8 P-256 authorization key copied from the agent Signers tab, not an EOA hex private key.');
 const dashboard=process.env.SENTINEL_DASHBOARD!.replace(/\/$/,'');
 const headers={authorization:`Bearer ${process.env.SENTINEL_WORKER_TOKEN}`,'content-type':'application/json'};
-const development=(process.env.VIRTUALS_NETWORK||'development').toLowerCase()!=='production';
+const development=(process.env.VIRTUALS_NETWORK||'production').toLowerCase()==='development';
 const serverUrl=development?ACP_TESTNET_SERVER_URL:undefined;
 const chain=development?baseSepolia:base;
 async function workspaceId(jobId:string){const b=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(jobId)));return 'acp-'+Array.from(b.slice(0,16),x=>x.toString(16).padStart(2,'0')).join('')}
