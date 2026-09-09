@@ -3,6 +3,7 @@ import base64
 import http.client
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -111,10 +112,33 @@ def audit_project(job, project, memory):
         api('POST','/api/worker/jobs',{'id':job['id'],'status':'progress','message':f'Reviewing contract {number} of {len(project["files"])}'})
         scoped = {**project, 'files':[source_file], 'scope':{**project['scope'], 'selected_files':1,
             'selected_bytes':len(source_file['content'].encode()), 'paths':[source_file['path']]}}
-        auditor = PashovReviewer(provider, ROOT / '.bugmind' / 'workspaces' / job['id'] / 'pashov-runs', concurrency=1)
+        artifact_root = ROOT / '.bugmind' / 'workspaces' / job['id'] / 'pashov-runs'
+        failed_runs = []
+        if artifact_root.exists():
+            for candidate in artifact_root.iterdir():
+                try:
+                    metadata = json.loads((candidate / 'run.json').read_text(encoding='utf-8'))
+                    if metadata.get('status') == 'failed': failed_runs.append(candidate)
+                except (OSError, ValueError):
+                    continue
+        resume_id = max(failed_runs, key=lambda path:path.stat().st_mtime).name if failed_runs else None
+        if resume_id: print(f'Resuming saved Pashov run {resume_id} for {source_file["path"]}.', flush=True)
+        auditor = PashovReviewer(provider, artifact_root, concurrency=1, resume=resume_id)
         try: result = review(scoped, memory, auditor)
         except ReviewError as error:
-            print(f'Contract audit failed safely: {source_file["path"]}: {error}', flush=True); continue
+            resume = re.search(r'Resume with --resume ([0-9a-f-]{36})', str(error), re.IGNORECASE)
+            message = str(error).lower()
+            transient = any(term in message for term in ('temporarily unavailable', 'connection failed or timed out',
+                'provider returned an incomplete review', 'provider omitted the completed review'))
+            if resume and transient:
+                print(f'Transient provider failure; resuming saved Pashov checkpoints for {source_file["path"]}.', flush=True)
+                try:
+                    auditor = PashovReviewer(provider, artifact_root, concurrency=1, resume=resume.group(1))
+                    result = review(scoped, memory, auditor)
+                except ReviewError as retry_error:
+                    print(f'Contract audit failed safely after checkpoint resume: {source_file["path"]}: {retry_error}', flush=True); continue
+            else:
+                print(f'Contract audit failed safely: {source_file["path"]}: {error}', flush=True); continue
         completed_contracts += 1
         remember_open(memory, project['repo'], result['findings'], scoped['files'], project['commit'])
         for finding in result['findings']: all_findings[finding['id']] = finding
